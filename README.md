@@ -27,6 +27,6 @@ A aplicação review escuta na porta 80, muito embora se faça no docker-compose
 Container para 8282:80, a aplicação rotten-potatoes não consegue acessar o micro servico view na porta 8282
 Portanto para que o conjunto funcione fui obrigado a apontar :
 
-REVIEW_SERVICE_URI: http://review <<<<=== porta 80 serviço defaul web.
+REVIEW_SERVICE_URI: http://review <<<<=== porta 80 serviço default web.
 
 
