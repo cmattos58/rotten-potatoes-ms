@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+  movie:
+    build:
+      context: ../movie/src
+      dockerfile: Dockerfile
+    image: cmattos59/movie:v1
+    container_name: movie
+    ports:
+      - 8181:8181
+    networks:
+      - micro
+    depends_on:
+      - mongodb
+    environment:
+      MONGODB_URI: mongodb://mongouser:mongopwd@mongodb:27017/admin
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    networks:
+      - micro
+    volumes:
+      - mongo_vol:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopwd
+
+  review:
+    build:
+      context: ../review/src/
+      dockerfile: Dockerfile
+    image: cmattos59/review:v1
+    container_name: review
+    ports:
+      - 8282:80
+    networks:
+      - micro
+    depends_on:
+      - postgres
+    environment:
+      ConnectionStrings__MyConnection: host=postgres;database=pguser;username=pguser;password=Pg@123;
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - micro
+    volumes:
+      - postgres_vol:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: Pg@123
+      POSTGRES_USER: pguser
+      POSTGRES_DB: pguser
+
+  rotten-potatoes-ms:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    image: cmattos59/rotten-potatoes-ms:v1
+    depends_on:
+      - movie
+      - review
+    ports:
+      - 5000:5000
+    networks:
+      - micro
+    environment:
+      MOVIE_SERVICE_URI: http://movie:8181
+      REVIEW_SERVICE_URI: http://review
+
+#Create Volumes for persistent Storage
+volumes:
+  mongo_vol:
+    name: mongo_vol
+  postgres_vol:
+    name: postgres_vol
+
+  #Create internal link network for Containers
+networks:
+  micro:
+    name: micro
+    driver: bridge
+
